@@ -962,6 +962,12 @@ Present completion with next steps:
 **[N] phases** | **[X] requirements** | Ready to build ✓
 
 ───────────────────────────────────────────────────────────────
+
+**Optional:** If your project has UI, establish design foundations first:
+
+/gsd:design-system — conversational design system creation
+
+───────────────────────────────────────────────────────────────
 ```
 
 Use AskUserQuestion to offer next steps:
@@ -972,6 +978,7 @@ Use AskUserQuestion to offer next steps:
   - "Run autopilot" — Execute entire milestone autonomously (Recommended)
   - "Plan phase 1" — Start with manual phase-by-phase execution
   - "Discuss phase 1" — Gather context before planning
+  - "Create design system" — Establish visual foundations first (UI projects)
 
 **If "Run autopilot":**
 ```
@@ -1011,6 +1018,27 @@ Route to autopilot command.
 **Also available:**
 - /gsd:plan-phase 1 — skip discussion, plan directly
 - /gsd:autopilot — execute entire milestone autonomously
+
+───────────────────────────────────────────────────────────────
+```
+
+**If "Create design system":**
+```
+───────────────────────────────────────────────────────────────
+
+## ▶ Design System
+
+Establish visual foundations before building UI phases.
+
+/gsd:design-system
+
+<sub>/clear first → fresh context window</sub>
+
+───────────────────────────────────────────────────────────────
+
+After design system is created, continue with:
+- /gsd:discuss-design 1 — design phase-specific UI
+- /gsd:plan-phase 1 — plan the first phase
 
 ───────────────────────────────────────────────────────────────
 ```

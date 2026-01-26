@@ -246,10 +246,16 @@ REQUIREMENTS_CONTENT=$(cat .planning/REQUIREMENTS.md 2>/dev/null)
 CONTEXT_CONTENT=$(cat "${PHASE_DIR}"/*-CONTEXT.md 2>/dev/null)
 RESEARCH_CONTENT=$(cat "${PHASE_DIR}"/*-RESEARCH.md 2>/dev/null)
 
+# Design context (from /gsd:discuss-design)
+DESIGN_CONTENT=$(cat "${PHASE_DIR}"/*-DESIGN.md 2>/dev/null)
+DESIGN_SYSTEM_CONTENT=$(cat .planning/DESIGN-SYSTEM.md 2>/dev/null)
+
 # Gap closure files (only if --gaps mode)
 VERIFICATION_CONTENT=$(cat "${PHASE_DIR}"/*-VERIFICATION.md 2>/dev/null)
 UAT_CONTENT=$(cat "${PHASE_DIR}"/*-UAT.md 2>/dev/null)
 ```
+
+**If DESIGN.md exists:** Display `Using phase design: ${PHASE_DIR}/${PHASE}-DESIGN.md`
 
 ## 8. Spawn gsd-planner Agent
 
@@ -284,6 +290,12 @@ Fill prompt with inlined content and spawn:
 
 **Research (if exists):**
 {research_content}
+
+**Design System (if exists):**
+{design_system_content}
+
+**Phase Design (if exists):**
+{design_content}
 
 **Gap Closure (if --gaps mode):**
 {verification_content}
@@ -516,7 +528,7 @@ Verification: {Passed | Passed with override | Skipped}
 - [ ] Research completed (unless --skip-research or --gaps or exists)
 - [ ] gsd-phase-researcher spawned if research needed
 - [ ] Existing plans checked
-- [ ] gsd-planner spawned with context (including RESEARCH.md if available)
+- [ ] gsd-planner spawned with context (including RESEARCH.md, DESIGN.md if available)
 - [ ] Plans created (PLANNING COMPLETE or CHECKPOINT handled)
 - [ ] gsd-plan-checker spawned (unless --skip-verify)
 - [ ] Verification passed OR user override OR max iterations with user decision
