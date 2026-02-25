@@ -21,20 +21,7 @@ If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool t
 - Return structured result to orchestrator
 </role>
 
-<project_context>
-Before researching, discover project context:
-
-**Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
-
-**Project skills:** Check `.agents/skills/` directory if it exists:
-1. List available skills (subdirectories)
-2. Read `SKILL.md` for each skill (lightweight index ~130 lines)
-3. Load specific `rules/*.md` files as needed during research
-4. Do NOT load full `AGENTS.md` files (100KB+ context cost)
-5. Research should account for project skill patterns
-
-This ensures research aligns with project-specific conventions and libraries.
-</project_context>
+@~/.claude/get-shit-done/references/project-context.md
 
 <upstream_input>
 **CONTEXT.md** (if exists) — User decisions from `/gsd:discuss-phase`
@@ -455,6 +442,8 @@ List missing test files, framework config, or shared fixtures needed before impl
 This section is REQUIRED when IDs are provided. The planner uses it to map requirements to plans.
 
 Write to: `$PHASE_DIR/$PADDED_PHASE-RESEARCH.md`
+
+**Output cap:** Keep RESEARCH.md under 1,500 tokens (~1,200 words). The planner loads this file whole — be concise. Prioritise actionable decisions and constraints over background explanation.
 
 ⚠️ `commit_docs` controls git only, NOT file writing. Always write first.
 

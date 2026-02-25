@@ -1,5 +1,5 @@
 <purpose>
-Create executable phase prompts (PLAN.md files) for a roadmap phase with integrated research and verification. Default flow: Research (if needed) -> Plan -> Verify -> Done. Orchestrates gsd-phase-researcher, gsd-planner, and gsd-plan-checker agents with a revision loop (max 3 iterations).
+Create executable phase prompts (PLAN.md files) for a roadmap phase with integrated research and verification. Default flow: Research (if needed) -> Plan -> Verify -> Done. Orchestrates gsd-phase-researcher, gsd-planner, and gsd-plan-checker agents with a revision loop (max 2 iterations).
 </purpose>
 
 <required_reading>
@@ -43,6 +43,8 @@ mkdir -p ".planning/phases/${padded_phase}-${phase_slug}"
 
 ```bash
 PHASE_INFO=$(node ~/.claude/get-shit-done/bin/gsd-tools.cjs roadmap get-phase "${PHASE}")
+BRIEF=$(node ~/.claude/get-shit-done/bin/gsd-tools.cjs roadmap phase-brief "${PHASE}")
+PHASE_BRIEF_MD=$(echo "$BRIEF" | jq -r '.brief_md // empty')
 ```
 
 **If `found` is false:** Error with available phases. **If `found` is true:** Extract `phase_number`, `phase_name`, `goal` from JSON.
@@ -175,7 +177,7 @@ Display banner:
 ### Spawn gsd-phase-researcher
 
 ```bash
-PHASE_DESC=$(node ~/.claude/get-shit-done/bin/gsd-tools.cjs roadmap get-phase "${PHASE}" | jq -r '.section')
+PHASE_REQ_IDS=$(echo "$BRIEF" | jq -r '[.req_ids[]] | join(",")')
 ```
 
 Research prompt:
@@ -188,12 +190,14 @@ Answer: "What do I need to know to PLAN this phase well?"
 
 <files_to_read>
 - {context_path} (USER DECISIONS from /gsd:discuss-phase)
-- {requirements_path} (Project requirements)
 - {state_path} (Project decisions and history)
 </files_to_read>
 
+<phase_brief>
+{phase_brief_md}
+</phase_brief>
+
 <additional_context>
-**Phase description:** {phase_description}
 **Phase requirement IDs (MUST address):** {phase_req_ids}
 
 **Project instructions:** Read ./CLAUDE.md if exists — follow project-specific guidelines
@@ -286,13 +290,15 @@ Planner prompt:
 
 <files_to_read>
 - {state_path} (Project State)
-- {roadmap_path} (Roadmap)
-- {requirements_path} (Requirements)
 - {context_path} (USER DECISIONS from /gsd:discuss-phase)
 - {research_path} (Technical Research)
 - {verification_path} (Verification Gaps - if --gaps)
 - {uat_path} (UAT Gaps - if --gaps)
 </files_to_read>
+
+<phase_brief>
+{phase_brief_md}
+</phase_brief>
 
 **Phase requirement IDs (every ID MUST appear in a plan's `requirements` field):** {phase_req_ids}
 
@@ -349,15 +355,16 @@ Checker prompt:
 ```markdown
 <verification_context>
 **Phase:** {phase_number}
-**Phase Goal:** {goal from ROADMAP}
 
 <files_to_read>
 - {PHASE_DIR}/*-PLAN.md (Plans to verify)
-- {roadmap_path} (Roadmap)
-- {requirements_path} (Requirements)
 - {context_path} (USER DECISIONS from /gsd:discuss-phase)
 - {research_path} (Technical Research — includes Validation Architecture)
 </files_to_read>
+
+<phase_brief>
+{phase_brief_md}
+</phase_brief>
 
 **Phase requirement IDs (MUST ALL be covered):** {phase_req_ids}
 
@@ -385,13 +392,13 @@ Task(
 - **`## VERIFICATION PASSED`:** Display confirmation, proceed to step 13.
 - **`## ISSUES FOUND`:** Display issues, check iteration count, proceed to step 12.
 
-## 12. Revision Loop (Max 3 Iterations)
+## 12. Revision Loop (Max 2 Iterations)
 
 Track `iteration_count` (starts at 1 after initial plan + check).
 
-**If iteration_count < 3:**
+**If iteration_count < 2:**
 
-Display: `Sending back to planner for revision... (iteration {N}/3)`
+Display: `Sending back to planner for revision... (iteration {N}/2)`
 
 Revision prompt:
 
@@ -426,7 +433,7 @@ Task(
 
 After planner returns -> spawn checker again (step 10), increment iteration_count.
 
-**If iteration_count >= 3:**
+**If iteration_count >= 2:**
 
 Display: `Max iterations reached. {N} issues remain:` + issue list
 
@@ -467,8 +474,6 @@ Task(
 
     <execution_context>
     @~/.claude/get-shit-done/workflows/execute-phase.md
-    @~/.claude/get-shit-done/references/checkpoints.md
-    @~/.claude/get-shit-done/references/tdd.md
     @~/.claude/get-shit-done/references/model-profile-resolution.md
     </execution_context>
 

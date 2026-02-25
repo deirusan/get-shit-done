@@ -3,7 +3,7 @@ Execute all plans in a phase using wave-based parallel execution. Orchestrator s
 </purpose>
 
 <core_principle>
-Orchestrator coordinates, not executes. Each subagent loads the full execute-plan context. Orchestrator: discover plans → analyze deps → group waves → spawn agents → handle checkpoints → collect results.
+Orchestrator coordinates, not executes. Orchestrator: discover plans → analyze deps → group waves → spawn agents → handle checkpoints → collect results.
 </core_principle>
 
 <required_reading>
@@ -110,10 +110,7 @@ Execute each wave in sequence. Within a wave: parallel if `PARALLELIZATION=true`
        </objective>
 
        <execution_context>
-       @~/.claude/get-shit-done/workflows/execute-plan.md
        @~/.claude/get-shit-done/templates/summary.md
-       @~/.claude/get-shit-done/references/checkpoints.md
-       @~/.claude/get-shit-done/references/tdd.md
        </execution_context>
 
        <files_to_read>
@@ -140,10 +137,12 @@ Execute each wave in sequence. Within a wave: parallel if `PARALLELIZATION=true`
 
 4. **Report completion — spot-check claims first:**
 
-   For each SUMMARY.md:
-   - Verify first 2 files from `key-files.created` exist on disk
-   - Check `git log --oneline --all --grep="{phase}-{plan}"` returns ≥1 commit
-   - Check for `## Self-Check: FAILED` marker
+   For each executor return:
+   - File existence: `[ -f {first Key-file from executor return} ]` and `[ -f {second Key-file} ]`
+   - Commit check: `git log --oneline --all --grep="{phase}-{plan}" | wc -l` returns ≥1
+   - Self-check status: use `Self-Check:` field from executor return directly
+
+   Do NOT read full SUMMARY.md files for spot-checking.
 
    If ANY spot-check fails: report which plan failed, route to failure handler — ask "Retry plan?" or "Continue with remaining waves?"
 
@@ -153,7 +152,7 @@ Execute each wave in sequence. Within a wave: parallel if `PARALLELIZATION=true`
    ## Wave {N} Complete
 
    **{Plan ID}: {Plan Name}**
-   {What was built — from SUMMARY.md}
+   {One-liner from executor return}
    {Notable deviations, if any}
 
    {If more waves: what this enables for next wave}
@@ -233,8 +232,8 @@ After all waves:
 | 2 | plan-04 | ✓ Complete |
 
 ### Plan Details
-1. **03-01**: [one-liner from SUMMARY.md]
-2. **03-02**: [one-liner from SUMMARY.md]
+1. **03-01**: [one-liner from executor return]
+2. **03-02**: [one-liner from executor return]
 
 ### Issues Encountered
 [Aggregate from SUMMARYs, or "None"]

@@ -66,7 +66,7 @@ function loadConfig(cwd) {
     branching_strategy: 'none',
     phase_branch_template: 'gsd/phase-{phase}-{slug}',
     milestone_branch_template: 'gsd/{milestone}-{slug}',
-    research: true,
+    research: false,
     plan_checker: true,
     verifier: true,
     parallelization: true,

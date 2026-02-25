@@ -291,8 +291,99 @@ function cmdRoadmapUpdatePlanProgress(cwd, phaseNum, raw) {
   }, raw, `${summaryCount}/${planCount} ${status}`);
 }
 
+function cmdPhaseBrief(cwd, phaseNum, raw) {
+  const roadmapPath = path.join(cwd, '.planning', 'ROADMAP.md');
+  const requirementsPath = path.join(cwd, '.planning', 'REQUIREMENTS.md');
+
+  if (!fs.existsSync(roadmapPath)) {
+    output({ found: false, error: 'ROADMAP.md not found' }, raw, '');
+    return;
+  }
+
+  try {
+    const content = fs.readFileSync(roadmapPath, 'utf-8');
+
+    const escapedPhase = phaseNum.replace(/\./g, '\\.');
+    const phasePattern = new RegExp(
+      `#{2,4}\\s*Phase\\s+${escapedPhase}:\\s*([^\\n]+)`,
+      'i'
+    );
+    const headerMatch = content.match(phasePattern);
+
+    if (!headerMatch) {
+      output({ found: false, phase_number: phaseNum }, raw, '');
+      return;
+    }
+
+    const phaseName = headerMatch[1].trim();
+    const headerIndex = headerMatch.index;
+
+    const restOfContent = content.slice(headerIndex);
+    const nextHeaderMatch = restOfContent.match(/\n#{2,4}\s+Phase\s+\d/i);
+    const sectionEnd = nextHeaderMatch
+      ? headerIndex + nextHeaderMatch.index
+      : content.length;
+    const section = content.slice(headerIndex, sectionEnd).trim();
+
+    const goalMatch = section.match(/\*\*Goal:\*\*\s*([^\n]+)/i);
+    const goal = goalMatch ? goalMatch[1].trim() : null;
+
+    const criteriaMatch = section.match(/\*\*Success Criteria\*\*[^\n]*:\s*\n((?:\s*\d+\.\s*[^\n]+\n?)+)/i);
+    const success_criteria = criteriaMatch
+      ? criteriaMatch[1].trim().split('\n').map(line => line.replace(/^\s*\d+\.\s*/, '').trim()).filter(Boolean)
+      : [];
+
+    // Extract REQ IDs from Requirements line in the section
+    const reqLineMatch = section.match(/\*\*Requirements?:\*\*\s*([^\n]+)/i);
+    let req_ids = [];
+    if (reqLineMatch) {
+      req_ids = reqLineMatch[1]
+        .replace(/[\[\]]/g, '')
+        .split(',')
+        .map(id => id.trim())
+        .filter(id => /^REQ-\d+/i.test(id));
+    }
+
+    // Extract matching requirement entries from REQUIREMENTS.md
+    let requirements_excerpt = '';
+    if (req_ids.length > 0 && fs.existsSync(requirementsPath)) {
+      const reqContent = fs.readFileSync(requirementsPath, 'utf-8');
+      const entries = [];
+      for (const reqId of req_ids) {
+        const escapedReqId = reqId.replace(/[-]/g, '\\-');
+        const reqPattern = new RegExp(
+          `^-\\s*\\[[ x]\\]\\s*\\*\\*${escapedReqId}\\*\\*[^\\n]*(?:\\n(?=[^\\S\\n])[^\\n]*)*`,
+          'mi'
+        );
+        const reqMatch = reqContent.match(reqPattern);
+        if (reqMatch) entries.push(reqMatch[0].trim());
+      }
+      requirements_excerpt = entries.join('\n');
+    }
+
+    // Build self-contained brief_md block
+    let brief_md = `### Phase ${phaseNum}: ${phaseName}\n`;
+    if (goal) brief_md += `\n**Goal:** ${goal}\n`;
+    if (success_criteria.length > 0) {
+      brief_md += `\n**Success Criteria:**\n`;
+      success_criteria.forEach((c, i) => { brief_md += `${i + 1}. ${c}\n`; });
+    }
+    if (req_ids.length > 0) brief_md += `\n**Requirements:** ${req_ids.join(', ')}\n`;
+    if (requirements_excerpt) brief_md += `\n**Requirement Details:**\n${requirements_excerpt}\n`;
+
+    output(
+      { found: true, phase_number: phaseNum, phase_name: phaseName, goal, success_criteria, req_ids, requirements_excerpt, brief_md },
+      raw,
+      brief_md
+    );
+  } catch (e) {
+    error('Failed to read phase brief: ' + e.message);
+  }
+}
+
 module.exports = {
   cmdRoadmapGetPhase,
   cmdRoadmapAnalyze,
   cmdRoadmapUpdatePlanProgress,
+  cmdPhaseBrief,
 };

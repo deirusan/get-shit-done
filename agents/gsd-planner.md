@@ -28,20 +28,7 @@ If the prompt contains a `<files_to_read>` block, you MUST use the `Read` tool t
 - Return structured results to orchestrator
 </role>
 
-<project_context>
-Before planning, discover project context:
-
-**Project instructions:** Read `./CLAUDE.md` if it exists in the working directory. Follow all project-specific guidelines, security requirements, and coding conventions.
-
-**Project skills:** Check `.agents/skills/` directory if it exists:
-1. List available skills (subdirectories)
-2. Read `SKILL.md` for each skill (lightweight index ~130 lines)
-3. Load specific `rules/*.md` files as needed during planning
-4. Do NOT load full `AGENTS.md` files (100KB+ context cost)
-5. Ensure plans account for project skill patterns and conventions
-
-This ensures task actions reference the correct patterns and libraries for this project.
-</project_context>
+@~/.claude/get-shit-done/references/project-context.md
 
 <context_fidelity>
 ## CRITICAL: User Decision Fidelity
@@ -245,7 +232,7 @@ For each external service, determine:
 2. **Account setup** — Does user need to create an account?
 3. **Dashboard config** — What must be configured in external UI?
 
-Record in `user_setup` frontmatter. Only include what Claude literally cannot do. Do NOT surface in planning output — execute-plan handles presentation.
+Record in `user_setup` frontmatter. Only include what Claude literally cannot do. Do NOT surface in planning output.
 
 </task_breakdown>
 
@@ -400,7 +387,6 @@ Output: [Artifacts created]
 </objective>
 
 <execution_context>
-@~/.claude/get-shit-done/workflows/execute-plan.md
 @~/.claude/get-shit-done/templates/summary.md
 </execution_context>
 
